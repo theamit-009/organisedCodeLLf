@@ -1,0 +1,250 @@
+<head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    </head>
+    
+       <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <a class="navbar-brand" href="#">LLF</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarColor01">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/expense/">Expense</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="/procurement/">Procurement</a>
+            </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="/users/timesheet">Timesheet</a>
+          </li> -->
+          <li class="nav-item">
+            <a class="nav-link" href="/users/timesheet">Timesheet</a>
+          </li>
+          
+          <!-- <li class="nav-item">
+              <a class="nav-link" href="/users/timesheet">Image Upload</a>
+          </li> -->
+          <li class="nav-item dropdown" style="margin-left: 800px;">
+            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink-4" data-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false">
+              <i class="fas fa-user "></i>&nbsp; <%= name%> </a>
+            <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink-4">
+              <a class="dropdown-item" href="/users/logout">Log out</a>
+            </div>
+          </li>
+        </ul>
+        
+      </div>
+     </nav>
+    
+      <div class="container-fluid">
+       <br />
+       <h4 align="center">Procuremnet IT</h4>
+       <br />
+       <form method="post" action="/insertprecash" id="formdata"  enctype="multipart/form-data">
+        <div class="table-repsonsive">
+         <span id="error"></span>
+         <table class="table table-bordered" id="item_table">
+          <tr>
+           <th>SR. NO</th>
+           <th>IT ITEMS</th>
+           <th>LOCATION</th>
+           <th>OTHER ITEMS</th>
+           <th>ITEMS SPECIFICATION</th>
+           <th>QUANTITY</th>
+           <th>BUDGET</th>
+           <th>AVAILABLE QUOTE</th>
+           <th>IMPANELED VENDOR</th>
+           <th>ATTACH QUOTE</th>
+           <th><button type="button" style="background-color:#2C3E50;" name="add" class="btn btn-success btn-sm add"><span class="glyphicon glyphicon-plus"></span></button></th>
+           <th style="display:none;"></th>
+           <th style="display:none;"></th>
+          </tr>
+         </table>
+         <div align="center">
+        
+          <input type="submit" style="background-color:#2C3E50;" name="submit" class="btn btn-info" value="Submit" />
+         </div>
+        </div>
+       </form>
+      </div>
+     
+    
+    
+    <script>
+
+     let  items =["External Hard disk", "Pen drive", "Desktop Mouse","Keyboard",
+     "Ram", "Monitor", "CPU", "UPS" ,"Battery", "Software", "Laptop", "Desktop", "Laptop Chargers", "Base", "Screen",
+     "Printer", "LCD projector", "Toner", "Cartridge", "Plasma",
+     "Servers", "Telephones", "Camera", "Tablets","OtherItems"];
+      let Base = ["Agra"];
+      var subListValue="";
+
+    $(document).ready(function(){
+     // alert('Hello pettyCash');
+     var count = 1
+     $(document).on('click', '.add', function(){
+        var cnt = count++;
+        var html = '';
+        html += '<tr>';
+        html += '<td>'+cnt+'</td>';
+        html += '<td><select id="items'+cnt+'" name="items" class="form-control item_unit"><option value="">Select</option></select></td>';
+        html += '<td><select id="loc'+cnt+'" name="location" class="form-control item_unit"><option value="">Select</option></select></td>';
+        html += '<td><input id="otherItems'+cnt+'" type="text" name="otherItems" class="form-control" readonly="true"  /></td>';
+        html += '<td><input type="text" name="itemSpecification" class="form-control" /></td>';
+        html += '<td><input type="number" name="quantity" class="form-control" /></td>';
+        html += '<td><input type="number" name="budget" class="form-control" /></td>';
+        html += '<td><a id="itquote'+cnt+'" target="_blank" href="#" >Preview</a></td>';
+        html += '<td><input id="imp'+cnt+'" type="checkbox" style="width:100%;" name="impaneledVendor" class="" disabled="true" /></td>';
+        html += '<td><input type="file" onChange="chkFile(this,'+cnt+')" name="fileprety" id="fileprety" class="form-control" /><input type="hidden" value="demo" name="imgpath" id="file_'+cnt+'"></td>';
+        html += '<td style="display:none;"><input id="impId'+cnt+'" type="hidden" name="impaneledVendorId" value="" class="form-control" /></td>';
+        html += '<td style="display:none;"><input  type="hidden" name="parentProcurementId" value="<%= parentAssetId %>" class="form-control" /></td>';
+        html += '<td><button type="button" name="remove" class="btn btn-danger btn-sm remove"><span class="glyphicon glyphicon-minus"></span></button></td></tr>';
+        
+        $('#item_table').append(html);
+
+       
+
+        let itemsValue='',locationValue='',impaneledVendorId='';
+        if(items.length > 0)
+        {
+          for(let i=0; i < items.length; i++)
+          {
+            $('#items'+cnt)
+            .append($("<option></option>")
+            .attr("value",items[i])
+            .text(items[i]))
+          }
+        }
+
+        $('#items'+cnt).on('change',function(){
+         
+            $('#'+cnt).empty();
+            itemsValue = this.value;
+            console.log('itemsValue  '+itemsValue);
+            subListValue = eval(this.value); 
+           
+            
+            if(this.value == "OtherItems")
+            {
+              console.log('Other Items got got got');
+              $('#otherItems'+cnt).attr("disabled",false); 
+            }
+
+            for(i=0; i<subListValue.length; i++)
+            {
+             
+              $('#loc'+cnt)
+                .append($("<option></option>")
+                .attr("value",subListValue[i])
+                .text(subListValue[i]));		
+           } 
+
+           $('#loc'+cnt).on('change',function(){
+              if(this.value == 'Agra')
+              {
+                //alert('DSDHSHD');
+                locationValue = this.value;
+                $.ajax({
+                  url : '/procurement/getRelatedQuote',
+                  type : 'get',
+                  data: {
+                    filtervalues : {
+                      itemsCategoryValue : 'IT',
+                      itemValue : itemsValue,
+                      placeValue : locationValue
+                    }
+                  },
+                  dataType : 'json'
+                })
+                .done((response) => {
+                    console.log('response quote URL name '+JSON.stringify(response));
+                    $('#itquote'+cnt)
+                    .attr("href",response.quote_public_url__c)
+                    .text('Available Quote');
+
+                    $('#imp'+cnt).attr("disabled",false);
+                  //  $('#impId'+cnt).attr("value",response.sfid);
+                    impaneledVendorId = response.sfid;
+                })
+                .fail((jqXHR,text,err) => {
+                    console.log('jqXHR  '+JSON.stringify(jqXHR));
+                    console.log('err  '+err + 'text  : '+text);
+                })
+              }
+              
+                
+              
+           });
+
+        })
+
+
+        $('#imp'+cnt).on('click',function(){
+
+          console.log('this.value  : '+this.checked);
+          if(this.checked == true)
+          {
+              $('#impId'+cnt).attr("value",impaneledVendorId);
+          }
+          else
+          {
+              $('#impId'+cnt).attr("value","");
+          }
+        });
+
+     }); //Add function Ends
+     
+     $(document).on('click', '.remove', function(){
+        $(this).closest('tr').remove();
+     });
+    
+    });
+    
+    
+    $(function () {
+      $('form#formdata').bind('submit', function () {
+        $.ajax({
+          type: 'post',
+          url: '/procurement/itProducts',   // Need to make changes in post method url
+          data: $('form#formdata').serialize(),
+          success: function (data) {
+            console.log(data);
+            alert(data);
+          }
+        });
+        return false;
+      });
+    });
+    
+    
+    function chkFile(file1,id) {
+        var file = file1.files[0];
+        var formData = new FormData();
+        formData.append('formData', file);
+    
+        $.ajax({
+        type: "POST",
+        url: "/expense/uploadImage",    
+        cache: false,
+        dataType:'json',
+        processData: false,
+        contentType: false,
+        data: formData,
+        success: function (data) {
+          console.log(data);
+        //  var result = JSON.stringify(data)
+         $('#file_'+id).val(data.url);
+         
+         }
+      });
+    }
+    
+    </script>

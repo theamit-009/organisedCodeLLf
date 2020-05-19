@@ -1,0 +1,116 @@
+<% include ../../partials/navbar %>
+<% include ../../partials/footer %>
+
+  <div class="container">
+   <br />
+   <%= parentTourBillId %>
+   <h4 align="center">Tour Bill Conveyances Charges</h4>
+   <br />
+   <div class="card card-body">
+      <% include ../../partials/messages %>
+    <div id="errorMessages"></div>
+   <form method="post" action="/insertprecash" id="formdata"  enctype="multipart/form-data">
+    <div class="table-repsonsive">
+     <span id="error"></span>
+     <table class="table table-bordered" id="item_table">
+      <tr>
+       <th>SLIP NO</th>
+       <th>DATE</th>
+       <th>PLACE</th>
+       <th>ACTIVITY CODE</th> 
+       <th>REMARKS</th>
+       <th>AMOUNT</th>
+       <th>UPLOAD FILE</th>
+       <th><button type="button" style="background-color:#2C3E50;" name="add" class="btn btn-success btn-sm add"><span class="glyphicon glyphicon-plus"></span></button></th>
+       <th style="display:none;"></th>
+      </tr>
+     </table>
+     <div align="center">
+    
+      <input type="submit" style="background-color:#2C3E50;" name="submit" class="btn btn-info" value="Submit" />
+     </div>
+    </div>
+   </form>
+   </div>
+  </div>
+ 
+
+
+<script>
+$(document).ready(function(){
+  //alert('Hello pettyCash');
+ var count = 1
+ $(document).on('click', '.add', function(){
+    var cnt = count++;
+    var html = '';
+    html += '<tr>';
+    html += '<td>'+cnt+'</td>';
+    html += '<td><input type="date" name="date" class="form-control " /></td>';
+    html += '<td><input type="text" name="place" class="form-control " /></td>';
+    html += '<td><select name="activity_code" class="form-control item_unit"><option value="1">Act/01/01/it/001</option><option value="2">Act/01/01/it/002</option></select></td>';
+    html += '<td><textarea  name="remarks" class="form-control"></textarea></td>';
+    html += '<td><input type="text" name="amount" class="form-control" /></td>';
+    html += '<td><input type="file" onChange="chkFile(this,'+cnt+')" name="fileprety" id="fileprety" class="form-control" /><input type="hidden" value="demo" name="imgpath" id="file_'+cnt+'"></td>';
+    html += '<td style="display:none;"><input  type="hidden" name="parentTourBillId" value="<%= parentTourBillId %>" class="form-control" /></td>';
+    html += '<td><button type="button" name="remove" class="btn btn-danger btn-sm remove"><span class="glyphicon glyphicon-minus"></span></button></td>';
+    html += '</tr>';
+   
+    $('#item_table').append(html);
+ });
+ 
+ $(document).on('click', '.remove', function(){
+    $(this).closest('tr').remove();
+ });
+
+});
+
+
+$(function () {
+  $('form#formdata').bind('submit', function () {
+    $.ajax({
+      type: 'post',
+      url: '/expense/tourBillClaim/conveyanceCharges',  
+      data: $('form#formdata').serialize(),
+      success: function (data) {
+        console.log(data);
+        
+        alert(data);
+        let errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">'+ data+
+          '<button type="button" class="close" data-dismiss="alert" aria-label="Close">'+
+            '<span aria-hidden="true">&times;</span>'+
+          '</button>'+
+        '</div>';
+        $('#errorMessages').empty();
+        $('#errorMessages').append(errorHtml); 
+       // location.assign('/expense/tourBillClaim');
+      }
+    });
+    return false;
+  });
+});
+
+
+function chkFile(file1,id) {
+    var file = file1.files[0];
+    var formData = new FormData();
+    formData.append('formData', file);
+
+   
+    $.ajax({
+    type: "POST",
+    url: "/expense/uploadImage",    
+    cache: false,
+    dataType:'json',
+    processData: false,
+    contentType: false,
+    data: formData,
+    success: function (data) {
+      console.log(data);
+    //  var result = JSON.stringify(data)
+     $('#file_'+id).val(data.url);
+     
+     }
+  });
+}
+
+</script>

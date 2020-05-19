@@ -1,0 +1,175 @@
+<% include ./partials/navbar %>
+
+
+    
+   
+    
+    <div id="activityCodes"></div>
+    <p id="expenseId"><%= parentExpenseId %></p>
+
+    <div class="row mt-5">
+        <div class="col-md-8 m-auto">
+          <div class="card card-body">
+              <% include ./partials/messages %>
+              <div id="errorMessages"></div>
+
+              <h4 align="center">Enter Petty Cash Details</h4>
+  
+    
+
+          <form method="post" action="/insertprecash" id="formdata"  enctype="multipart/form-data">
+            <div class="table-repsonsive">
+            <span id="error"></span>
+            <table class="table table-bordered" id="item_table">
+              <tr>
+              <th>SLIP NO</th>
+              <th>BILL NO.</th>
+              <th>BILL DATE</th>
+              <th>ACTIVITY CODE</th>
+              <th>DESCRIPTION OF ACTIVITY EXPENSES</th>
+              
+
+              <th>NATURE OF EXP</th>
+              <th>AMOUNT</th>
+              <th>FILE</th>
+              <th><button type="button" style="background-color:#2C3E50;" name="add" class="btn btn-success btn-sm add"><span class="glyphicon glyphicon-plus"></span></button></th>
+              <th style="display:none;"></th>
+              </tr>
+            </table>
+            <div align="center">
+            
+              <input type="submit" style="background-color:#2C3E50;" name="submit" class="btn btn-info" value="Submit" />
+            </div>
+            </div>
+          </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+$(document).ready(function(){
+ $('#expenseId').hide();
+ $('#activityCodes').hide();
+ let expenseId = document.getElementById('expenseId').innerHTML; 
+ let lstActivityCodes = [];
+  $.ajax({
+      url : '/expense/activityCodes',
+      data : {
+        parentExpenseId : expenseId
+      },
+      dataType : 'json',
+      type : 'get'
+  })
+  .done((response) => {
+      console.log('response  '+response);
+      if(response.length > 0)
+      { 
+        response.forEach((eachResponse) => {
+          lstActivityCodes.push(eachResponse.activity_code__c);
+          console.log('lstActivityCodes  : '+lstActivityCodes);
+          document.getElementById('activityCodes').innerHTML = lstActivityCodes;
+        })  
+      }
+  })
+  .fail((jqXHR,text,err) => {
+      console.log('text  '+text + '  err '+err);
+  })
+
+ 
+
+ var count = 1
+ $(document).on('click', '.add', function(){
+    var cnt = count++;
+    var html = '';
+    html += '<tr>';
+    html += '<td>'+cnt+'</td>';
+    html += '<td><input type="text" name="bill_no" class="form-control" /></td>';
+    html += '<td><input type="date" name="bill_date" class="form-control " /></td>';
+    html += '<td><select id="act'+cnt+'" name="activity_code" class="form-control item_unit"><option value="Act/01/01/it/001">Act/01/01/it/001</option><option value="KIT-101">KIT-101</option></select></td>';
+    html += '<td><textarea  name="desc" class="form-control"></textarea></td>';
+    html += '<td><input type="text" name="nature_exp" class="form-control" /></td>';
+    html += '<td><input type="text" name="amount" class="form-control" /></td>';
+    html += '<td><input type="file" onChange="chkFile(this,'+cnt+')" name="fileprety" id="fileprety" class="form-control" /><input type="hidden" value="demo" name="imgpath" id="file_'+cnt+'"></td>';
+    html += '<td style="display:none;"><input  type="hidden" name="parentExpenseId" value="<%= parentExpenseId %>" class="form-control" /></td>';
+    html += '<td><button type="button" name="remove" class="btn btn-danger btn-sm remove"><span class="glyphicon glyphicon-minus"></span></button></td></tr>';
+    
+    $('#item_table').append(html);
+
+
+    let activityCodes = document.getElementById('activityCodes').innerHTML;
+    console.log('typeof(activityCodes)  :'+typeof(activityCodes)+ '  Inside Add Button activityCodes  : '+activityCodes);
+
+    lstActivityCodes = activityCodes.split(',');
+  /*  lstActivityCodes.forEach((eachActivityCode) => {
+     // console.log(eachActivityCode);
+        $('#act'+cnt)
+        .append($("<option></option>"))
+        .attr("value",eachActivityCode)
+        .text(eachActivityCode);
+    }); */
+
+ });
+
+ 
+ 
+ $(document).on('click', '.remove', function(){
+    $(this).closest('tr').remove();
+ });
+
+});
+
+
+$(function () {
+  $('form#formdata').bind('submit', function () {
+    $.ajax({
+      type: 'post',
+      url: '/expense/savePettyCashForm',
+      data: $('form#formdata').serialize(),
+      success: function (data) {
+        console.log(data);
+        let msg = data;
+        alert(msg);
+        let errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">'+ data+
+          '<button type="button" class="close" data-dismiss="alert" aria-label="Close">'+
+            '<span aria-hidden="true">&times;</span>'+
+          '</button>'+
+        '</div>';
+        $('#errorMessages').empty();
+        $('#errorMessages').append(errorHtml);
+       // location.assign('/expense');
+      },
+      fail:function(jqXHR ,status,error){
+        console.log('jqXHR '+JSON.stringify(jqXHR));        
+      }
+
+    });
+    return false;
+  });
+});
+
+
+function chkFile(file1,id) {
+    var file = file1.files[0];
+    var formData = new FormData();
+    formData.append('formData', file);
+
+   
+    $.ajax({
+    type: "POST",
+    url: "/expense/uploadImage",    
+    cache: false,
+    dataType:'json',
+    processData: false,
+    contentType: false,
+    data: formData,
+    success: function (data) {
+      console.log(data);
+    //  var result = JSON.stringify(data)
+     $('#file_'+id).val(data.url);
+     
+     }
+  });
+}
+
+</script>
