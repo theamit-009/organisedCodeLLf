@@ -8,7 +8,7 @@
    <div class="card card-body">
       <% include ../../partials/messages %>
     <div id="errorMessages"></div>
-   <form method="post" action="/insertprecash" id="formdata"  enctype="multipart/form-data">
+   <form  method="post" action="/insertprecash" id="formdata"  enctype="multipart/form-data">
     <div class="table-repsonsive" >
      <span id="error"></span>
      <table class="table table-bordered " id="item_table">
@@ -55,14 +55,25 @@
 $(document).ready(function(){
    $('#tourbillId').hide();
    let tourbillId = document.getElementById('tourbillId').innerHTML;
- var count = 1
- $(document).on('click', '.add', function(){
+   var count = 1;
+
+   let activityCodes = [];
+   $.get('/expense/tourBillClaim/fetchActivityCodes',{tourbillId : tourbillId}, function(response){
+        console.log('response  : '+JSON.stringify(response));
+        activityCodes = response;
+    }).fail(function(jqXHR, error) {
+        console.log('error  : '+JSON.stringify(jqXHR));
+    })
+  
+   
+   $(document).on('click', '.add', function(){
+ 
     var cnt = count++;
     var html = '';
     html += '<tr>';
     html += '<td>'+cnt+'</td>';
     html += '<td><select name="stayOption" class="form-control"><option value="">None</option><option value="Own Stay">Own Stay</option><option value="Stay">Stay</option></select>';
-    html += '<td><select name="activity_code" class="form-control item_unit"></select></td>';
+    html += '<td><select id="activity_code'+cnt+'" name="activity_code" class="form-control item_unit"></select></td>';
     html += '<td><select  id="place" name="placeJourney" class="form-control" ></select></td>';
     html += '<td><input type="text" id="tier3City'+cnt+'" disabled="true" name="tier3City" class="form-control" /></td>';
     html += '<td><input type="date" name="fromDate" class="form-control" /></td>';
@@ -79,14 +90,34 @@ $(document).ready(function(){
     html += '<td style="display:none;"><input  type="hidden" name="parentTourBillId" value="<%= parentTourBillId %>" class="form-control" /></td>';
     $('#item_table').append(html);
 
-    $('#place').empty();
+
+   /* let defaultOption = new Option('Select','',true, true);
+    document.forms["formdata"]["activity_code"].appendChild(defaultOption);
+    if(typeof(activityCodes) == 'object' && activityCodes.length > 0)
+    {
+      activityCodes.forEach((eachCode) => {
+        let option = new Option(eachCode.activity_code__c,eachCode.sfid,false,false);    
+        document.forms["formdata"]["activity_code"].appendChild(option);
+      })
+    } */
+
+    for(let i=0; i< activityCodes.length ;i++)
+    {
+      $('#activity_code'+cnt)
+      .append($("<option></option>")
+      .attr("value",activityCodes[i].sfid)
+      .text(activityCodes[i].activity_code__c));	
+    }
+
+
+  /*  $('#place').empty();
     for(let i=0;i < city.length; i++)
     {
       console.log('lstPlaces[i]'+city[i].city__c);
       $('#place')
       .append($("<option></option>")
-      .attr("value",city[i]).city__c)
-      .text(city[i].city__c);	
+      .attr("value",city[i].city__c)
+      .text(city[i].city__c));	
     }
    
     $('#place'+cnt).on("change",function(){
@@ -96,20 +127,23 @@ $(document).ready(function(){
           $('#tier3City'+cnt).attr("disabled",true);
 
           
-    });
+    }); */
 
- });
+
+    
+  });
+
+
+
+ 
+
+ 
  
  $(document).on('click', '.remove', function(){
     $(this).closest('tr').remove();
  });
 
 
- $.get('/expense/tourBillClaim/fetchActivityCodes',{tourbillId : tourbillId}, function(response){
-    console.log('response  : '+JSON.stringify(response));
- }).fail(function(jqXHR, error) {
-    console.log('error  : '+JSON.stringify(jqXHR));
- })
 
 
 

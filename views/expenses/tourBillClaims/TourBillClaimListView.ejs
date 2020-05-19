@@ -611,7 +611,8 @@
             var tourBillId = document.getElementById('tourBillId').innerHTML;
             alert('tourBillId  '+tourBillId);
             console.log('tourBillId   '+tourBillId);
-            location.assign('/expense/tourBillClaim/airRailBusCharges/'+tourBillId);
+            // /expense/tourBillClaim/airRailBusCharges/a1U0p0000005CRNEA2
+            location.assign('/expense/tourBillClaim/airRailBusCharges?prakhar='+tourBillId);
           });
   
           $('a.conveyanceCharges').click(() => {

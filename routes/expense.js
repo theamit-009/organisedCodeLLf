@@ -482,7 +482,7 @@ router.get('/pettyCash/:parentExpenseId',verify,(request, response) => {
   var objUser = request.user;
   console.log('Expense userId : '+userId);
 
-  response.render('pettycash',{objUser, parentExpenseId:parentExpenseId });
+  response.render('./expenses/pettyCash/pettycash',{objUser, parentExpenseId:parentExpenseId });
 });
 
 
@@ -596,7 +596,7 @@ router.get('/conveyanceVoucher/:parentExpenseId',verify,(request, response) => {
   var objUser = request.user;
   console.log('Expense userId : '+userId);
 
-  response.render('conveyanceVoucher',{objUser, parentExpenseId: parentExpenseId });
+  response.render('./expenses/conveyanceVoucher/conveyanceVoucher',{objUser, parentExpenseId: parentExpenseId });
 
 });
 

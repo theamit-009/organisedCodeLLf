@@ -41,7 +41,7 @@ router.get('/getpldForm',verify, (request, response) => {
   console.log('request.query  : '+JSON.stringify(request.query));
   let contactId = request.query.contactId;
 
-  pool.query('SELECT projectName, pldFormUrl, sentDate, pldformid  FROM pld_forms WHERE contactId = $1',[userId])
+  pool.query('SELECT pld.project__c, pld.pldform_generatedURL__c, pld.createddate, pld.project_library__c ,pld.name as pldname, pro.name as proname FROM salesforce.sent_pld_form__c as pld INNER JOIN salesforce.Milestone1_Project__c as pro ON pld.project__c = pro.sfid WHERE tocontact__c = $1',[userId])
   .then((pldQueryResult) => {
         console.log('pldQueryResult  : '+JSON.stringify(pldQueryResult.rows));
         if(pldQueryResult.rowCount > 0)
@@ -58,7 +58,6 @@ router.get('/getpldForm',verify, (request, response) => {
   })
 
 });
-
 
 router.get('/viewResponses',verify,(request,response)=>{
 

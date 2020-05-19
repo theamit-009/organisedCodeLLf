@@ -42,12 +42,14 @@
         })
         .done((response)=>{
             console.log('response  '+JSON.stringify(response));
+            $('#spinnerPldForm').hide();
             if(response.length > 0)
             {
               let htmlTable = '';
               htmlTable += '<thead><tr>';
               htmlTable += '<th>Serial </th>';
               htmlTable += '<th>Project Name</th>';
+              htmlTable += '<th>Form Name</th>';
               htmlTable += '<th>Form Link</th>';
               htmlTable += '<th>Sent Date Time</th>';
               htmlTable += '<th>View Responses</th>';
@@ -55,18 +57,20 @@
               htmlTable += '<tbody>';
               let i=1;
               response.forEach((eachRecord) => {
-                console.log('type  : '+typeof(eachRecord.sentdate));
-                let dateTime = new Date(eachRecord.sentdate);
+                console.log('type  : '+typeof(eachRecord.createddate));
+                console.log('eachRecord.pldform_generatedurl__c  : '+eachRecord.pldform_generatedurl__c);
+                let dateTime = new Date(eachRecord.createddate);
                 dateTime.setHours(dateTime.getHours() + 5);
                 dateTime.setMinutes(dateTime.getMinutes() + 30);
                 dateTime =  dateTime.toLocaleString();
                 console.log('dateTime  : '+dateTime);
                 htmlTable += '<tr>';
                 htmlTable += '<td>'+i+' </td>';
-                htmlTable += '<td>'+eachRecord.projectname+' </td>';
-                htmlTable += '<td><a class="btn btn-primary" style="color:white;" href="'+eachRecord.pldformurl+'" target="_blank" >Click Here</a></td>';
+                htmlTable += '<td>'+eachRecord.proname+' </td>';
+                htmlTable += '<td>'+eachRecord.pldname+' </td>';
+                htmlTable += '<td><a class="btn btn-primary" style="color:white;" href="'+eachRecord.pldform_generatedurl__c+'" target="_blank" >Click Here</a></td>';
                 htmlTable += '<td>'+dateTime+' </td>';
-                htmlTable += '<td><a class="btn btn-primary responseModalAnchorId" id="'+eachRecord.pldformid+'"  style="color:white;" href="#"  >View Responses</a> </td>';
+                htmlTable += '<td><a class="btn btn-primary responseModalAnchorId" id="'+eachRecord.project_library__c+'"  style="color:white;" href="#"  >View Responses</a> </td>';
                 htmlTable += '</tr>';
                 i++;
               })
@@ -103,7 +107,10 @@
                           htmlResponsesTable += '<th>Serial </th>';
                           htmlResponsesTable += '<th>Response Name</th>';
                           htmlResponsesTable += '<th>Response Date Time</th>';
-                          htmlResponsesTable += '<th>Preivew</th>';
+                          htmlResponsesTable += '<th>Submit Approval</th>';
+                          htmlResponsesTable += '<th>Status</th>';
+                          htmlResponsesTable += '<th>Preview</th>';
+                          htmlResponsesTable += '<th>Delete</th>';
                           htmlResponsesTable += '</tr></thead>';
                           htmlResponsesTable += '<tbody>';
                           let i=1;
@@ -118,7 +125,19 @@
                               htmlResponsesTable += '<td>'+i+' </td>';
                               htmlResponsesTable += '<td>'+eachRecord.name+' </td>';
                               htmlResponsesTable += '<td>'+dateTime+' </td>';
-                              htmlResponsesTable += '<td><a class="btn btn-primary " href="https://llfdev1-llf1.cs74.force.com/responsepdf?Id='+eachRecord.sfid+'" target="_blank" style="color:white;"  >Preview</a> </td>';
+                              htmlResponsesTable += '<td><button class="btn btn-primary submitFormForApproval" id="'+eachRecord.sfid+'" >Submit For Approval</a> </td>';
+                              if(eachRecord.status__c == 'Approved' || eachRecord.status__c == 'Rejected' )
+                                htmlResponsesTable += '<td>'+eachRecord.status__c+'</td>';
+                              else
+                              htmlResponsesTable += '<td></td>';
+                              if(eachRecord.status__c != null && eachRecord.status__c != 'Pending' && eachRecord.status__c != 'Rejected')
+                              {
+                                htmlResponsesTable += '<td><a class="btn btn-primary " href="https://llfdev1-llf1.cs74.force.com/responsepdf?Id='+eachRecord.sfid+'" target="_blank" style="color:white;"  >Preview</a> </td>';
+                                htmlResponsesTable += '<td><button class="btn btn-danger deleteResponse" id="'+eachRecord.sfid+'" >Delete</a> </td>';
+                              }
+
+                              
+                              
                               htmlResponsesTable += '</tr>';
                               i++;
                           });
@@ -133,11 +152,61 @@
                     $('#responsesTable').append(htmlResponsesTable);
                   //  $('#loader').addClass('hidden')
                      $('#spinner').hide();
+
+
+
+                     $('.deleteResponse').on('click',function(event){
+                          event.stopImmediatePropagation();
+                          event.stopPropagation();
+                          
+                          let reponseId = this.id;
+                          alert('Hello I am clicked '+reponseId);
+
+                          $.post('/users/deletePldResponse',{reponseId : reponseId},function(response){
+                                console.log('reponse '+response);
+                                alert(response);
+                          }).fail((error) => {
+                                console.log('Error');
+                          })
+
+                                             
+                     });
+
+                     
+                     $('.submitFormForApproval').on('click',function(event){
+                      event.stopImmediatePropagation();
+                      event.stopPropagation();
+                      
+                      let reponseId = this.id;
+                      alert('Hello I am clicked '+reponseId);
+
+                      $.ajax({
+                          url :'/users/sendResponseForApproval',
+                          data : {reponseId : reponseId},
+                          type :'post',
+                          dataType: 'json'
+                      })
+                      .done((response) => {
+                          console.log('response  : '+response);
+                      })
+                      .fail((jqXHR, status, error) => {
+                        $('#spinnerPldForm').hide();
+                        console.log('jqXHR   : '+JSON.stringify(jqXHR));
+                        alert(jqXHR.responseText);
+                      })                          
+                 });
+
                 })
                 .fail(function(jqXHR, status, error){
+                  $('#spinner').hide();
+                  $('#spinnerPldForm').hide();
                   console.log('Error '+error);
                   console.log('status '+status);
                 })
+
+
+
+                
                 //alert($(this).attr('id')+' clicked!');
               })
             }
@@ -161,7 +230,7 @@
  
      
   <div class="row mt-5">
-      <div class="col-md-6 m-auto">
+      <div class="col-md-8 m-auto">
         <div class="card card-body">
          
           
@@ -175,13 +244,36 @@
       </div>
 </div>
 
+<div class="row mt-5">
+  <div class="col-md-8 m-auto">
+    <div class="card card-body">
+      <center><h4>Download Report</h4></center>
+     <table class="table table-striped">
+        <thead>
+            <th>Project</th>
+            <th>Project Library</th>
+            <th>Report Action </th>
+
+        </thead>
+        <tbody>
+            <td>Project 6 </td>
+            <td>Newest form for testing</td>
+            <td><a class="btn btn-primary" href="http://llfdev1-llf1.cs74.force.com/PldColumnReport?id=a1l0p0000006jDRAAY">Download</a></td>
+        </tbody>
+     </table>
+
+    
+    </div>
+  </div>
+</div>
+
 
 
 
 <!-- <div id="loader" class="lds-dual-ring hidden overlay"></div> -->
 
 <div class="row mt-5">
-  <div class="col-md-6 m-auto">
+  <div class="col-md-8 m-auto">
     <div class="card card-body">
         <h4><center>Available PLD Forms </center></h4>
         <div  class="table-responsive">
@@ -200,29 +292,29 @@
 
    
   
-<div id="responsesModal" class="modal fade bs-example-modal-lg" tabindex ="-1" role="dialog" aria-labelledby="myLargeModalLabel" >
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="createTaskModal">View Responses</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-            <div id="spinner">
-               <center> <img src="/spinner-gif-transparent-background-14.gif" />  </center>
-            </div>
-          <table id="responsesTable" class="table table-striped">
-
-          </table>
+<div id="responsesModal" class="modal fade bs-example-modal-xl" tabindex ="-1" role="dialog" aria-labelledby="myLargeModalLabel" >
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createTaskModal">View Responses</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="submit" id="expenseSubmitbutton"  class="btn btn-primary">Save</button>
+        <div class="modal-body">
+          <div class="table-responsive">
+              <div id="spinner">
+                 <center> <img src="/spinner-gif-transparent-background-14.gif" />  </center>
+              </div>
+            <table id="responsesTable" class="table ">
+  
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" id="expenseSubmitbutton"  class="btn btn-primary">Save</button>
+        </div>
       </div>
     </div>
   </div>
-</div>

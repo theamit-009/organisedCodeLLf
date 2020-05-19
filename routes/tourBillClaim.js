@@ -329,11 +329,16 @@ router.get('/getAirBusListView',verify,(request,response)=>{
     })
   })
   
-
+  // /expense/tourBillClaim//airRailBusCharges/:tout
 router.get('/airRailBusCharges',verify,(request, response) => {
 
+  let objUser = request.user;
+  console.log('XXXXXXX : objUser  : '+JSON.stringify(objUser));
+  //let parentTourBillId = request.params.amit;
+  let parentTourBillId = request.query.prakhar;
 
-  //response.render()
+  console.log('XXXXXXX :  parentTourBillId  : '+parentTourBillId)
+  response.render('./expenses/tourBillClaims/airRailBusCharges',{objUser,parentTourBillId });
 
 });
 
