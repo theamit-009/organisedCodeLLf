@@ -351,11 +351,12 @@ router.post('/airRailBusCharges',verify, (request, response) => {
         departure_Date:joi.date().max('now').label('departure_Date must be less than Today').required(),
         arrival_Date:joi.date().less(joi.ref('departure_Date')).label('Arrival Date must be less than departure_Date').required(),
         amount:joi.number().required().label('Amount cannot be null'),
+        activity_code:string().required().label('Please select activity code'),
         arrival_Station:joi.string().required().label('Please fill Arrivial Statton'),
         departure_Station:joi.string().required().label('Please fill Departure Station'),
-        imgpath:joi.string().invalid('deme').required().label('Upload your File/Attachment'),
+        imgpath:joi.string().invalid('demo').required().label('Upload your File/Attachment'),
     })
-    let Result=schema.validate(request.body);
+    let Result = schema.validate(request.body);
     console.log('validaton result '+JSON.stringify(Result.error));
     if(Result.error)
     {

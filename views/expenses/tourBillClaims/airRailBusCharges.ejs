@@ -23,7 +23,7 @@
        <th>DEPARTURE STATION</th>
        <th>AMOUNT</th>
        <th>UPLOAD FILE</th>
-       <th><button type="button" style="background-color:#2C3E50;" name="add" class="btn btn-success btn-sm add"><span class="glyphicon glyphicon-plus"></span></button></th>
+       <th><button type="button" id="addButton" style="background-color:#2C3E50;" name="add" class="btn btn-success btn-sm add"><span class="glyphicon glyphicon-plus"></span></button></th>
        <th style="display:none;"></th>
       </tr>
      </table>
@@ -41,33 +41,29 @@
 <script>
 $(document).ready(function(){
  // alert('Hello pettyCash');
-
+$('#addButton').hide();
 $('#tourbillId').hide();
  let tourbillId  = document.getElementById('tourbillId').innerHTML;
  let activityCodes = [];
+ var count = 1;
  $.get('/expense/tourBillClaim/fetchActivityCodes',{tourbillId : tourbillId}, function(response){
       console.log('response  : '+JSON.stringify(response));
       activityCodes = response;
-  }).fail(function(jqXHR, error) {
-      console.log('error  : '+JSON.stringify(jqXHR));
-  })
+      $('#addButton').show();
 
-
- var count = 1
- $(document).on('click', '.add', function(){
-    var cnt = count++;
+      var cnt = count++;
     var html = '';
     html += '<tr>';
     html += '<td>'+cnt+'</td>';
     html += '<td><input type="date" name="arrival_Date" class="form-control" /></td>';
     html += '<td><input type="date" name="departure_Date" class="form-control " /></td>';
-    html += '<td><select id="activity_code'+cnt+'" name="activity_code" class="form-control item_unit"></select></td>';
+    html += '<td><select id="activity_code'+cnt+'" name="projectTask" class="form-control item_unit"></select></td>';
     html += '<td><input type="text" name="arrival_Station" class="form-control" /></td>';
     html += '<td><input type="text" name="departure_Station" class="form-control" /></td>';
     html += '<td><input type="number" name="amount" class="form-control" /></td>';
     html += '<td><input type="file" onChange="chkFile(this,'+cnt+')" name="fileprety" id="fileprety" class="form-control" /><input type="hidden" value="demo" name="imgpath" id="file_'+cnt+'"></td>';
     html += '<td style="display:none;"><input  type="hidden" name="parentTourBillId" value="<%= parentTourBillId %>" class="form-control" /></td>';
-    html += '<td style="display:none;"><input  type="hidden" id="activityCodeLabel'+cnt+'" name="activityCodeLabel"  class="form-control" /></td>';
+    html += '<td style="display:none;"><input  type="hidden" id="projectTask'+cnt+'"  name="activity_code"  class="form-control" /></td>';
     html += '<td><button type="button" name="remove" class="btn btn-danger btn-sm remove"><span class="glyphicon glyphicon-minus"></span></button></td></tr>';
     
     $('#item_table').append(html);
@@ -85,9 +81,65 @@ $('#tourbillId').hide();
     }
 
     $('#activity_code'+cnt).on('change',function(){
-        let label = this.text();
-        let value = this.value;
-        console.log('label  :'+label+' value'+value);
+        let taskId = this.value;
+        let selectedCode = activityCodes.filter((eachCode)=> {
+          if(eachCode.sfid == taskId)
+            return eachCode;
+        })
+        let label = selectedCode[0].activity_code__c;
+        document.getElementById('projectTask'+cnt).value = label;
+      //  $('#projectTask'+cnt).value = label;
+        console.log('label  :'+label+' value : '+taskId);
+    })
+      
+
+
+  }).fail(function(jqXHR, error) {
+      console.log('error  : '+JSON.stringify(jqXHR));
+  })
+
+
+ 
+ $(document).on('click', '.add', function(){
+    var cnt = count++;
+    var html = '';
+    html += '<tr>';
+    html += '<td>'+cnt+'</td>';
+    html += '<td><input type="date" name="arrival_Date" class="form-control" /></td>';
+    html += '<td><input type="date" name="departure_Date" class="form-control " /></td>';
+    html += '<td><select id="activity_code'+cnt+'"  name="projectTask" class="form-control item_unit"></select></td>';
+    html += '<td><input type="text" name="arrival_Station" class="form-control" /></td>';
+    html += '<td><input type="text" name="departure_Station" class="form-control" /></td>';
+    html += '<td><input type="number" name="amount" class="form-control" /></td>';
+    html += '<td><input type="file" onChange="chkFile(this,'+cnt+')" name="fileprety" id="fileprety" class="form-control" /><input type="hidden" value="demo" name="imgpath" id="file_'+cnt+'"></td>';
+    html += '<td style="display:none;"><input  type="hidden" name="parentTourBillId" value="<%= parentTourBillId %>" class="form-control" /></td>';
+    html += '<td style="display:none;"><input  type="hidden" id="projectTask'+cnt+'" name="activity_code"   class="form-control" /></td>';
+    html += '<td><button type="button" name="remove" class="btn btn-danger btn-sm remove"><span class="glyphicon glyphicon-minus"></span></button></td></tr>';
+    
+    $('#item_table').append(html);
+
+    $('#activity_code'+cnt)
+      .append($("<option></option>")
+      .attr("value",'')
+      .text('Select'));	
+    for(let i=0; i< activityCodes.length ;i++)
+    {
+      $('#activity_code'+cnt)
+      .append($("<option></option>")
+      .attr("value",activityCodes[i].sfid)
+      .text(activityCodes[i].activity_code__c));	
+    }
+
+    $('#activity_code'+cnt).on('change',function(){
+        let taskId = this.value;
+        let selectedCode = activityCodes.filter((eachCode)=> {
+          if(eachCode.sfid == taskId)
+            return eachCode;
+        })
+        let label = selectedCode[0].activity_code__c;
+        document.getElementById('projectTask'+cnt).value = label;
+      //  $('#projectTask'+cnt).value = label;
+        console.log('label  :'+label+' value : '+taskId);
     })
       
 

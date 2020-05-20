@@ -498,7 +498,7 @@ router.get('/getevents',verify, async function(req, res, next) {
 
 router.get('/logout', (request, response) => {
  // request.logout();
- // request.flash('success_msg', 'You are logged out');
+  request.flash('success_msg', 'You are logged out');
   response.redirect('/users/login');
 });
 
